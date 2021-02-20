@@ -15,13 +15,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.conf import settings
-from django.urls import path, include
+from django.urls import path, include, re_path
 from store import views
+
+app_name = 'store'
 
 urlpatterns = [
     path('', views.index),
     path('admin/', admin.site.urls),
-    path('store/', include('store.urls')),
+    re_path('store/', include(('store.urls', 'store'), namespace='store')),
 ]
 
 if settings.DEBUG:
