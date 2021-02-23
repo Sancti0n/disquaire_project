@@ -1,14 +1,8 @@
 from django.shortcuts import render, get_object_or_404
-
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
-# Create your views here.
-from django.http import HttpResponse
-#from .models import ALBUMS
-
 from .models import Album, Artist, Contact, Booking
-
-from django.template import loader
+from .forms import ContactForm
 
 def index(request):
     albums = Album.objects.filter(available=True).order_by('-created_at')[:12]
@@ -19,18 +13,13 @@ def index(request):
 
 def listing(request):
     albums_list = Album.objects.filter(available=True)
-    # Slice pages
     paginator = Paginator(albums_list, 9)
-    # Get current page number
     page = request.GET.get('page')
-    # Return only this page albums and not others
     try:
         albums = paginator.page(page)
     except PageNotAnInteger:
-        # If page is not an integer, deliver first page.
         albums = paginator.page(1)
     except EmptyPage:
-        # If page is out of range (e.g. 9999), deliver last page of results.
         albums = paginator.page(paginator.num_pages)
     context = {
         'albums': albums,
@@ -48,6 +37,40 @@ def detail(request, album_id):
         'album_id': album.id,
         'thumbnail': album.picture
     }
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            name = form.cleaned_data['name']
+
+            contact = Contact.objects.filter(email=email)
+            if not contact.exists():
+                # If a contact is not registered, create a new one.
+                contact = Contact.objects.create(
+                    email=email,
+                    name=name
+                )
+            else:
+                contact = contact.first()
+
+            album = get_object_or_404(Album, id=album_id)
+            booking = Booking.objects.create(
+                contact=contact,
+                album=album
+            )
+            album.available = False
+            album.save()
+            context = {
+                'album_title': album.title
+            }
+            return render(request, 'store/merci.html', context)
+        else:
+            # Form data doesn't match the expected format.
+            # Add errors to the template.
+            context['errors'] = form.errors.items()
+    else:
+        form = ContactForm()
+    context['form'] = form
     return render(request, 'store/detail.html', context)
 
 def search(request):
