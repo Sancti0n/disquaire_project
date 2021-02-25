@@ -21,7 +21,7 @@ from store import views
 app_name = 'store'
 
 urlpatterns = [
-    path('', views.index),
+    path('', views.index, name='index'),
     path('admin/', admin.site.urls),
     re_path('store/', include(('store.urls', 'store'), namespace='store')),
 ]

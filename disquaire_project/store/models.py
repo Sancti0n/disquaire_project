@@ -8,6 +8,9 @@ class Artist(models.Model):
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+        verbose_name = "artiste"
 
 class Contact(models.Model):
     email = models.EmailField(max_length=100)
@@ -16,8 +19,11 @@ class Contact(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = "prospect"
+
 class Album(models.Model):
-    reference = models.IntegerField(null=True)
+    reference = models.IntegerField('référence', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     available = models.BooleanField(default=True)
     title = models.CharField(max_length=200)
@@ -27,6 +33,9 @@ class Album(models.Model):
     def __str__(self):
         return self.title
 
+    class Meta:
+        verbose_name = "disque"
+
 class Booking(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     contacted = models.BooleanField(default=False)
@@ -35,3 +44,6 @@ class Booking(models.Model):
 
     def __str__(self):
         return self.contact.name
+
+    class Meta:
+        verbose_name = "réservation"
